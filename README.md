@@ -107,7 +107,7 @@ This repository is actively maintained. Check back regularly for:
 
 **🐛 Found a bug? [Report it here](https://github.com/nguyenhhoa03/simple-website/issues)**
 
-**💡 Have an idea? [Share it with us](https://github.com/nguyenhhoa03/simple-website/discussions)**
+**💡 Have an idea? [Share it with me](mailto:nguyenhhoa03@gmail.com)**
 
 ---
 
