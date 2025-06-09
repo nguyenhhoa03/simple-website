@@ -9,6 +9,9 @@ import webbrowser
 from flask import Flask, render_template_string
 from bs4 import BeautifulSoup, NavigableString
 import tempfile
+import base64
+from PIL import Image, ImageTk
+import mimetypes
 
 class HTMLTemplateEditor:
     def __init__(self):
@@ -25,6 +28,7 @@ class HTMLTemplateEditor:
         self.html_file_path = None
         self.html_content = ""
         self.text_elements = []
+        self.image_elements = []
         self.flask_app = None
         self.flask_thread = None
         self.temp_html_file = None
@@ -35,12 +39,48 @@ class HTMLTemplateEditor:
         # Kiểm tra đường dẫn file từ command line
         self.check_command_line_args()
     
+    def create_text_tab(self):
+        """Tạo tab chỉnh sửa văn bản"""
+        # Tạo scrollable frame cho text
+        self.text_scrollable_frame = ctk.CTkScrollableFrame(self.text_tab)
+        self.text_scrollable_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Bind sự kiện cuộn chuột/touchpad
+        self.bind_mousewheel(self.text_scrollable_frame)
+        self.text_scrollable_frame.bind("<Button-1>", lambda e: self.text_scrollable_frame.focus_set())
+        
+        # Label hướng dẫn
+        instruction_label = ctk.CTkLabel(
+            self.text_scrollable_frame,
+            text="Chọn file HTML để bắt đầu chỉnh sửa văn bản",
+            font=ctk.CTkFont(size=16)
+        )
+        instruction_label.pack(pady=20)
+    
+    def create_image_tab(self):
+        """Tạo tab chỉnh sửa hình ảnh"""
+        # Tạo scrollable frame cho image
+        self.image_scrollable_frame = ctk.CTkScrollableFrame(self.image_tab)
+        self.image_scrollable_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        
+        # Bind sự kiện cuộn chuột/touchpad
+        self.bind_mousewheel(self.image_scrollable_frame)
+        self.image_scrollable_frame.bind("<Button-1>", lambda e: self.image_scrollable_frame.focus_set())
+        
+        # Label hướng dẫn
+        instruction_label = ctk.CTkLabel(
+            self.image_scrollable_frame,
+            text="Chọn file HTML để bắt đầu chỉnh sửa hình ảnh",
+            font=ctk.CTkFont(size=16)
+        )
+        instruction_label.pack(pady=20)
+    
     def bind_mousewheel(self, widget):
         """Bind sự kiện cuộn chuột/touchpad cho widget một cách ổn định"""
         def _on_mousewheel(event):
             try:
                 # Lấy canvas từ scrollable frame
-                canvas = self.scrollable_frame._parent_canvas
+                canvas = widget._parent_canvas
                 
                 # Tính toán delta phù hợp với hệ điều hành
                 if event.delta:
@@ -161,27 +201,21 @@ class HTMLTemplateEditor:
         )
         self.save_btn.pack(side="right", padx=5)
         
-        # Frame cho nội dung chỉnh sửa với thanh cuộn
+        # Frame cho nội dung chỉnh sửa với tab
         content_frame = ctk.CTkFrame(main_frame)
         content_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
-        # Tạo scrollable frame
-        self.scrollable_frame = ctk.CTkScrollableFrame(content_frame)
-        self.scrollable_frame.pack(fill="both", expand=True, padx=10, pady=10)
+        # Tạo tabview
+        self.tabview = ctk.CTkTabview(content_frame)
+        self.tabview.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Bind sự kiện cuộn chuột/touchpad cho scrollable frame
-        self.bind_mousewheel(self.scrollable_frame)
+        # Tab chỉnh sửa text
+        self.text_tab = self.tabview.add("Chỉnh sửa văn bản")
+        self.create_text_tab()
         
-        # Thêm focus tracking để cải thiện touchpad
-        self.scrollable_frame.bind("<Button-1>", lambda e: self.scrollable_frame.focus_set())
-        
-        # Label hướng dẫn
-        instruction_label = ctk.CTkLabel(
-            self.scrollable_frame,
-            text="Chọn file HTML để bắt đầu chỉnh sửa",
-            font=ctk.CTkFont(size=16)
-        )
-        instruction_label.pack(pady=20)
+        # Tab chỉnh sửa hình ảnh
+        self.image_tab = self.tabview.add("Chỉnh sửa hình ảnh")
+        self.create_image_tab()
     
     def select_html_file(self):
         """Chọn file HTML"""
@@ -214,16 +248,19 @@ class HTMLTemplateEditor:
             messagebox.showerror("Lỗi", f"Không thể đọc file HTML: {str(e)}")
     
     def parse_html_and_create_editors(self):
-        """Phân tích HTML và tạo các editor cho text"""
-        # Xóa các widget cũ trong scrollable frame
-        for widget in self.scrollable_frame.winfo_children():
+        """Phân tích HTML và tạo các editor cho text và hình ảnh"""
+        # Xóa các widget cũ trong scrollable frames
+        for widget in self.text_scrollable_frame.winfo_children():
+            widget.destroy()
+        for widget in self.image_scrollable_frame.winfo_children():
             widget.destroy()
         
         # Parse HTML với BeautifulSoup
         soup = BeautifulSoup(self.html_content, 'html.parser')
         self.text_elements = []
+        self.image_elements = []
         
-        # Tìm tất cả các element có text
+        # Tìm tất cả các text elements
         text_tags = ['title', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div', 'a', 'button', 'label', 'li', 'td', 'th']
         
         for tag_name in text_tags:
@@ -237,10 +274,33 @@ class HTMLTemplateEditor:
                         'widget': None
                     })
         
-        # Tạo giao diện chỉnh sửa
+        # Tìm tất cả các img elements
+        img_elements = soup.find_all('img')
+        for i, img in enumerate(img_elements):
+            src = img.get('src', '')
+            alt = img.get('alt', '')
+            title = img.get('title', '')
+            
+            self.image_elements.append({
+                'element': img,
+                'index': i,
+                'original_src': src,
+                'alt': alt,
+                'title': title,
+                'widgets': {}
+            })
+        
+        # Tạo giao diện chỉnh sửa text
+        self.create_text_editors()
+        
+        # Tạo giao diện chỉnh sửa image
+        self.create_image_editors()
+    
+    def create_text_editors(self):
+        """Tạo các editor cho text elements"""
         if not self.text_elements:
             no_text_label = ctk.CTkLabel(
-                self.scrollable_frame,
+                self.text_scrollable_frame,
                 text="Không tìm thấy text nào để chỉnh sửa trong file HTML",
                 font=ctk.CTkFont(size=14)
             )
@@ -252,13 +312,32 @@ class HTMLTemplateEditor:
             self.create_text_editor(i, text_data)
         
         # Bind lại mousewheel cho các widget mới được tạo và refresh focus
-        self.root.after(200, lambda: self.bind_mousewheel(self.scrollable_frame))
-        self.root.after(300, lambda: self.scrollable_frame.focus_set())
+        self.root.after(200, lambda: self.bind_mousewheel(self.text_scrollable_frame))
+        self.root.after(300, lambda: self.text_scrollable_frame.focus_set())
+    
+    def create_image_editors(self):
+        """Tạo các editor cho image elements"""
+        if not self.image_elements:
+            no_image_label = ctk.CTkLabel(
+                self.image_scrollable_frame,
+                text="Không tìm thấy hình ảnh nào để chỉnh sửa trong file HTML",
+                font=ctk.CTkFont(size=14)
+            )
+            no_image_label.pack(pady=20)
+            return
+        
+        # Tạo editor cho mỗi image element
+        for i, image_data in enumerate(self.image_elements):
+            self.create_image_editor(i, image_data)
+        
+        # Bind lại mousewheel cho các widget mới được tạo và refresh focus
+        self.root.after(200, lambda: self.bind_mousewheel(self.image_scrollable_frame))
+        self.root.after(300, lambda: self.image_scrollable_frame.focus_set())
     
     def create_text_editor(self, index, text_data):
         """Tạo editor cho một text element"""
         # Frame container cho mỗi editor
-        editor_frame = ctk.CTkFrame(self.scrollable_frame)
+        editor_frame = ctk.CTkFrame(self.text_scrollable_frame)
         editor_frame.pack(fill="x", padx=5, pady=5)
         
         # Label mô tả tag
@@ -283,6 +362,185 @@ class HTMLTemplateEditor:
         # Lưu widget vào text_data
         text_data['widget'] = text_widget
     
+    def create_image_editor(self, index, image_data):
+        """Tạo editor cho một image element"""
+        # Frame container cho mỗi image editor
+        editor_frame = ctk.CTkFrame(self.image_scrollable_frame)
+        editor_frame.pack(fill="x", padx=5, pady=5)
+        
+        # Label mô tả
+        title_label = ctk.CTkLabel(
+            editor_frame,
+            text=f"Hình ảnh #{index + 1}",
+            font=ctk.CTkFont(weight="bold", size=14)
+        )
+        title_label.pack(anchor="w", padx=10, pady=(10, 5))
+        
+        # Frame cho preview image
+        preview_frame = ctk.CTkFrame(editor_frame)
+        preview_frame.pack(fill="x", padx=10, pady=5)
+        
+        # Preview image
+        preview_label = ctk.CTkLabel(preview_frame, text="Preview:")
+        preview_label.pack(anchor="w", padx=5, pady=2)
+        
+        # Image preview widget
+        image_preview = ctk.CTkLabel(preview_frame, text="Không thể tải hình ảnh")
+        image_preview.pack(padx=5, pady=5)
+        
+        # Load và hiển thị preview
+        self.load_image_preview(image_data['original_src'], image_preview)
+        
+        # Source URL/Path
+        src_label = ctk.CTkLabel(editor_frame, text="Đường dẫn hình ảnh:")
+        src_label.pack(anchor="w", padx=10, pady=(5, 2))
+        
+        src_entry = ctk.CTkEntry(editor_frame, height=35)
+        src_entry.insert(0, image_data['original_src'])
+        src_entry.pack(fill="x", padx=10, pady=(0, 5))
+        
+        # Alt text
+        alt_label = ctk.CTkLabel(editor_frame, text="Văn bản thay thế (Alt):")
+        alt_label.pack(anchor="w", padx=10, pady=(5, 2))
+        
+        alt_entry = ctk.CTkEntry(editor_frame, height=35)
+        alt_entry.insert(0, image_data['alt'])
+        alt_entry.pack(fill="x", padx=10, pady=(0, 5))
+        
+        # Title
+        title_text_label = ctk.CTkLabel(editor_frame, text="Tiêu đề hình ảnh (Title):")
+        title_text_label.pack(anchor="w", padx=10, pady=(5, 2))
+        
+        title_entry = ctk.CTkEntry(editor_frame, height=35)
+        title_entry.insert(0, image_data['title'])
+        title_entry.pack(fill="x", padx=10, pady=(0, 5))
+        
+        # Buttons frame
+        buttons_frame = ctk.CTkFrame(editor_frame)
+        buttons_frame.pack(fill="x", padx=10, pady=5)
+        
+        # Button chọn file từ máy
+        upload_btn = ctk.CTkButton(
+            buttons_frame,
+            text="Chọn ảnh từ máy",
+            command=lambda: self.upload_image(src_entry, image_preview),
+            width=120
+        )
+        upload_btn.pack(side="left", padx=5, pady=5)
+        
+        # Button preview URL
+        preview_btn = ctk.CTkButton(
+            buttons_frame,
+            text="Preview URL",
+            command=lambda: self.preview_image_url(src_entry.get(), image_preview),
+            width=100
+        )
+        preview_btn.pack(side="left", padx=5, pady=5)
+        
+        # Lưu widgets vào image_data
+        image_data['widgets'] = {
+            'src_entry': src_entry,
+            'alt_entry': alt_entry,
+            'title_entry': title_entry,
+            'preview': image_preview
+        }
+    
+    def load_image_preview(self, src, preview_widget):
+        """Tải và hiển thị preview hình ảnh"""
+        try:
+            if src.startswith('data:image'):
+                # Base64 image
+                header, data = src.split(',', 1)
+                image_data = base64.b64decode(data)
+                
+                # Tạo file tạm để PIL có thể đọc
+                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
+                temp_file.write(image_data)
+                temp_file.close()
+                
+                # Load với PIL
+                pil_image = Image.open(temp_file.name)
+                os.unlink(temp_file.name)  # Xóa file tạm
+                
+            elif src.startswith('http'):
+                # URL image - không preview được trong app
+                preview_widget.configure(text=f"URL: {src[:50]}...")
+                return
+            else:
+                # Local file path
+                if os.path.exists(src):
+                    pil_image = Image.open(src)
+                else:
+                    # Thử relative path
+                    if self.html_file_path:
+                        base_dir = os.path.dirname(self.html_file_path)
+                        full_path = os.path.join(base_dir, src)
+                        if os.path.exists(full_path):
+                            pil_image = Image.open(full_path)
+                        else:
+                            preview_widget.configure(text=f"File không tồn tại: {src}")
+                            return
+                    else:
+                        preview_widget.configure(text=f"File không tồn tại: {src}")
+                        return
+            
+            # Resize image để preview
+            pil_image.thumbnail((150, 150), Image.Resampling.LANCZOS)
+            
+            # Convert to PhotoImage
+            photo = ImageTk.PhotoImage(pil_image)
+            
+            # Update preview
+            preview_widget.configure(image=photo, text="")
+            preview_widget.image = photo  # Keep a reference
+            
+        except Exception as e:
+            preview_widget.configure(text=f"Lỗi tải ảnh: {str(e)}")
+    
+    def upload_image(self, src_entry, preview_widget):
+        """Upload hình ảnh từ máy và convert thành base64"""
+        file_path = filedialog.askopenfilename(
+            title="Chọn hình ảnh",
+            filetypes=[
+                ("Image files", "*.png *.jpg *.jpeg *.gif *.bmp *.webp"),
+                ("All files", "*.*")
+            ]
+        )
+        
+        if file_path:
+            try:
+                # Đọc file và convert thành base64
+                with open(file_path, 'rb') as f:
+                    image_data = f.read()
+                
+                # Xác định mime type
+                mime_type = mimetypes.guess_type(file_path)[0]
+                if not mime_type:
+                    mime_type = 'image/png'
+                
+                # Tạo data URL
+                base64_data = base64.b64encode(image_data).decode('utf-8')
+                data_url = f"data:{mime_type};base64,{base64_data}"
+                
+                # Update src entry
+                src_entry.delete(0, 'end')
+                src_entry.insert(0, data_url)
+                
+                # Update preview
+                self.load_image_preview(data_url, preview_widget)
+                
+                messagebox.showinfo("Thành công", "Đã upload hình ảnh thành công!")
+                
+            except Exception as e:
+                messagebox.showerror("Lỗi", f"Không thể upload hình ảnh: {str(e)}")
+    
+    def preview_image_url(self, url, preview_widget):
+        """Preview hình ảnh từ URL"""
+        if url.strip():
+            self.load_image_preview(url.strip(), preview_widget)
+        else:
+            preview_widget.configure(text="Vui lòng nhập URL hình ảnh")
+    
     def get_tag_description(self, tag):
         """Trả về mô tả cho từng loại tag"""
         descriptions = {
@@ -306,7 +564,7 @@ class HTMLTemplateEditor:
         return descriptions.get(tag, 'Văn bản')
     
     def get_updated_html(self):
-        """Lấy HTML đã được cập nhật với text mới"""
+        """Lấy HTML đã được cập nhật với text và image mới"""
         # Parse HTML lại
         soup = BeautifulSoup(self.html_content, 'html.parser')
         
@@ -328,6 +586,37 @@ class HTMLTemplateEditor:
                     if elem.string and elem.string.strip() == text_data['original_text']:
                         elem.string.replace_with(new_text)
                         break
+        
+        # Cập nhật image cho từng element
+        for image_data in self.image_elements:
+            widgets = image_data['widgets']
+            if widgets:
+                # Lấy giá trị mới từ widgets
+                new_src = widgets['src_entry'].get().strip()
+                new_alt = widgets['alt_entry'].get().strip()
+                new_title = widgets['title_entry'].get().strip()
+                
+                # Tìm img element tương ứng và cập nhật
+                img_elements = soup.find_all('img')
+                if image_data['index'] < len(img_elements):
+                    img_elem = img_elements[image_data['index']]
+                    
+                    # Cập nhật attributes
+                    if new_src:
+                        img_elem['src'] = new_src
+                    if new_alt:
+                        img_elem['alt'] = new_alt
+                    else:
+                        # Xóa attribute nếu rỗng
+                        if 'alt' in img_elem.attrs:
+                            del img_elem['alt']
+                    
+                    if new_title:
+                        img_elem['title'] = new_title
+                    else:
+                        # Xóa attribute nếu rỗng
+                        if 'title' in img_elem.attrs:
+                            del img_elem['title']
         
         return str(soup)
     
@@ -415,7 +704,13 @@ class HTMLTemplateEditor:
             threading.Timer(1.5, lambda: webbrowser.open('http://127.0.0.1:5000')).start()
             
             # Hiển thị thông báo
-            messagebox.showinfo("Preview", "Đang khởi động preview server...\nTrình duyệt sẽ tự động mở trong giây lát.")
+            def show_preview_message():
+            	try:
+            		if self.root.winfo_exists():  # Kiểm tra ứng dụng còn tồn tại
+            			messagebox.showinfo("Preview", "Đang khởi động preview server...\nTrình duyệt sẽ tự động mở trong giây lát.")
+            	except:
+            		pass
+            show_preview_message()
             
         except Exception as e:
             messagebox.showerror("Lỗi", f"Không thể khởi động preview: {str(e)}")
