@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Templates - Open Source Website Templates</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ddd;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            outline: none;
+        }
+
+        .theme-toggle::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .theme-toggle.dark {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .theme-toggle.dark::before {
+            transform: translateX(30px);
+        }
+
+        .theme-icon {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-icon.sun {
+            left: 8px;
+            opacity: 1;
+        }
+
+        .theme-icon.moon {
+            right: 8px;
+            opacity: 0.5;
+        }
+
+        .theme-toggle.dark .theme-icon.sun {
+            opacity: 0.5;
+        }
+
+        .theme-toggle.dark .theme-icon.moon {
+            opacity: 1;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-menu a:hover {
+            color: #667eea;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s ease;
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
+        }
+
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .mobile-menu span {
+            width: 25px;
+            height: 3px;
+            background: #333;
+            margin: 3px 0;
+            transition: 0.3s;
+        }
+
+        .mobile-nav-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            flex-direction: column;
+            padding: 1rem 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+        }
+
+        .mobile-nav-menu.show {
+            display: flex;
+        }
+
+        .mobile-nav-menu li {
+            list-style: none;
+            margin: 0;
+        }
+
+        .mobile-nav-menu a {
+            display: block;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .mobile-nav-menu a:hover {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        body.dark .mobile-nav-menu {
+            background: rgba(15, 15, 35, 0.98);
+        }
+
+        body.dark .mobile-nav-menu a {
+            color: #e0e0e0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark .mobile-nav-menu a:hover {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 2;
+            position: relative;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .cta-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 5rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Why Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        /* Templates Section */
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .template-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .template-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .template-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, #f0f2f5, #e8ecf0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #667eea;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .template-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        .template-content {
+            padding: 1.5rem;
+        }
+
+        .template-content h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .template-content p {
+            color: #666;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .template-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-align: center;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .more-button {
+            text-align: center;
+            margin-top: 3rem;
+        }
+
+        .btn-more {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .btn-more:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* About Section */
+        .about-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .about-content p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 3rem 2rem;
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Dark Theme Styles */
+        body.dark {
+            background: #0f0f23;
+            color: #e0e0e0;
+        }
+
+        body.dark nav {
+            background: rgba(15, 15, 35, 0.95);
+        }
+
+        body.dark nav.scrolled {
+            background: rgba(15, 15, 35, 0.98);
+        }
+
+        body.dark .nav-menu a {
+            color: #e0e0e0;
+        }
+
+        body.dark .nav-menu a:hover {
+            color: #667eea;
+        }
+
+        body.dark .feature-card {
+            background: #1a1a2e;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            color: #e0e0e0;
+        }
+
+        body.dark .feature-card h3 {
+            color: #e0e0e0;
+        }
+
+        body.dark .feature-card p {
+            color: #b0b0b0;
+        }
+
+        body.dark .template-card {
+            background: #1a1a2e;
+        }
+
+        body.dark .template-content h3 {
+            color: #e0e0e0;
+        }
+
+        body.dark .template-content p {
+            color: #b0b0b0;
+        }
+
+        body.dark .template-image {
+            background: linear-gradient(45deg, #16213e, #1a1a2e);
+        }
+
+        body.dark .about-content p {
+            color: #b0b0b0;
+        }
+
+        body.dark .mobile-menu span {
+            background: #e0e0e0;
+        }
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+
+            .mobile-menu {
+                display: flex;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+            }
+
+            .section {
+                padding: 3rem 1rem;
+            }
+
+            .section h2 {
+                font-size: 2rem;
+            }
+
+            .templates-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .template-card {
+                margin: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">Simple Templates</div>
+            <div class="nav-right">
+                <ul class="nav-menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#why">Why</a></li>
+                    <li><a href="#templates">Templates</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+                <button class="theme-toggle dark" id="themeToggle">
+                    <span class="theme-icon sun">☀️</span>
+                    <span class="theme-icon moon">🌙</span>
+                </button>
+                <div class="mobile-menu" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            <ul class="mobile-nav-menu" id="mobileNavMenu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#why">Why</a></li>
+                <li><a href="#templates">Templates</a></li>
+                <li><a href="#about">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Beautiful Website Templates</h1>
+            <p>Open source HTML, CSS & JavaScript templates that are simple, elegant, and ready to use. All templates are licensed under GNU GPL v3.</p>
+            <a href="#templates" class="cta-button">Explore Templates</a>
+        </div>
+    </section>
+
+    <!-- Why Section -->
+    <section id="why" class="section">
+        <h2>Why Choose Simple Templates?</h2>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🚀</div>
+                <h3>Fast & Lightweight</h3>
+                <p>Our templates are optimized for speed and performance. Clean code, minimal dependencies, and fast loading times across all devices.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Fully Responsive</h3>
+                <p>Every template is designed to look perfect on desktop, tablet, and mobile devices. Responsive design that adapts to any screen size.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔓</div>
+                <h3>Open Source</h3>
+                <p>All templates are free and open source under GNU GPL v3 license. Use them for personal or commercial projects without restrictions.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3>Modern Design</h3>
+                <p>Contemporary designs with beautiful gradients, smooth animations, and clean layouts that follow current web design trends.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Easy to Customize</h3>
+                <p>Well-structured code with clear comments. Easy to modify colors, fonts, layouts, and content to match your brand.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛠️</div>
+                <h3>Developer Friendly</h3>
+                <p>Clean, semantic HTML, organized CSS, and vanilla JavaScript. No complex frameworks or build processes required.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Templates Section -->
+    <section id="templates" class="section">
+        <h2>Template Collection</h2>
+        <div class="templates-grid">
+            <div class="template-card">
+                <div class="template-image">🌟</div>
+                <div class="template-content">
+                    <h3>Portfolio Template</h3>
+                    <p>Showcase your work with this elegant portfolio template featuring smooth animations and responsive design.</p>
+                    <div class="template-buttons">
+                        <a href="#" class="btn btn-primary">Live Demo</a>
+                        <a href="#" class="btn btn-secondary">View Code</a>
+                    </div>
+                </div>
+            </div>
+            <div class="template-card">
+                <div class="template-image">💼</div>
+                <div class="template-content">
+                    <h3>Business Landing</h3>
+                    <p>Professional business landing page with modern design, perfect for startups and corporate websites.</p>
+                    <div class="template-buttons">
+                        <a href="#" class="btn btn-primary">Live Demo</a>
+                        <a href="#" class="btn btn-secondary">View Code</a>
+                    </div>
+                </div>
+            </div>
+            <div class="template-card">
+                <div class="template-image">📝</div>
+                <div class="template-content">
+                    <h3>Blog Template</h3>
+                    <p>Clean and minimal blog template with typography focus, perfect for writers and content creators.</p>
+                    <div class="template-buttons">
+                        <a href="#" class="btn btn-primary">Live Demo</a>
+                        <a href="#" class="btn btn-secondary">View Code</a>
+                    </div>
+                </div>
+            </div>
+            <div class="template-card">
+                <div class="template-image">🍽️</div>
+                <div class="template-content">
+                    <h3>Restaurant Template</h3>
+                    <p>Appetizing restaurant template with menu showcase, perfect for cafes, restaurants, and food businesses.</p>
+                    <div class="template-buttons">
+                        <a href="#" class="btn btn-primary">Live Demo</a>
+                        <a href="#" class="btn btn-secondary">View Code</a>
+                    </div>
+                </div>
+            </div>
+            <div class="template-card">
+                <div class="template-image">📊</div>
+                <div class="template-content">
+                    <h3>Dashboard Template</h3>
+                    <p>Modern admin dashboard template with charts and data visualization components for web applications.</p>
+                    <div class="template-buttons">
+                        <a href="#" class="btn btn-primary">Live Demo</a>
+                        <a href="#" class="btn btn-secondary">View Code</a>
+                    </div>
+                </div>
+            </div>
+            <div class="template-card">
+                <div class="template-image">📱</div>
+                <div class="template-content">
+                    <h3>App Landing</h3>
+                    <p>Mobile app landing page template with app showcase, features, and download links for app promotion.</p>
+                    <div class="template-buttons">
+                        <a href="#" class="btn btn-primary">Live Demo</a>
+                        <a href="#" class="btn btn-secondary">View Code</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="more-button">
+            <a href="https://github.com/nguyenhhoa03/simple-website" class="btn-more" target="_blank">More Templates on GitHub</a>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <h2>About Simple Templates</h2>
+        <div class="about-content">
+            <p>Simple Templates is a curated collection of beautiful, responsive website templates built with modern web technologies. Our mission is to provide developers and designers with high-quality, open-source templates that are easy to use and customize.</p>
+            <p>All templates are carefully crafted with attention to detail, following web standards and best practices. They're designed to be lightweight, fast-loading, and SEO-friendly, giving you a solid foundation for your next web project.</p>
+            <p>Every template is released under the GNU General Public License v3, ensuring they remain free and open source for everyone. Whether you're building a personal portfolio, business website, or learning web development, our templates provide the perfect starting point.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="https://github.com/nguyenhhoa03/simple-website">GitHub Repository</a>
+                <a href="#templates">Templates</a>
+                <a href="#about">About</a>
+                <a href="mailto:contact@simple.42web.io">Contact</a>
+            </div>
+            <p>&copy; 2025 Simple Templates. Licensed under GNU GPL v3. Free and open source forever.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Set dark theme as default
+        body.classList.add('dark');
+
+        // Check for saved theme preference or default to dark
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        if (savedTheme === 'light') {
+            body.classList.remove('dark');
+            themeToggle.classList.remove('dark');
+        }
+
+        themeToggle.addEventListener('click', function () {
+            body.classList.toggle('dark');
+            themeToggle.classList.toggle('dark');
+
+            // Save theme preference
+            const currentTheme = body.classList.contains('dark') ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
+        });
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function () {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Mobile menu toggle
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileNavMenu = document.getElementById('mobileNavMenu');
+        const navMenu = document.querySelector('.nav-menu');
+
+        mobileMenuToggle.addEventListener('click', function (event) {
+            event.stopPropagation();
+            mobileNavMenu.classList.toggle('show');
+
+            // Ẩn menu ngang khi mở menu dọc
+            if (mobileNavMenu.classList.contains('show')) {
+                navMenu.style.display = 'none';
+            } else {
+                // Hiện lại menu ngang nếu màn hình rộng
+                if (window.innerWidth > 768) {
+                    navMenu.style.display = 'flex';
+                }
+            }
+        });
+
+        // Close mobile menu when clicking on a link
+        const mobileNavLinks = mobileNavMenu.querySelectorAll('a');
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', function () {
+                mobileNavMenu.classList.remove('show');
+                if (window.innerWidth > 768) {
+                    navMenu.style.display = 'flex';
+                }
+            });
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function (event) {
+            if (!mobileMenuToggle.contains(event.target) && !mobileNavMenu.contains(event.target)) {
+                mobileNavMenu.classList.remove('show');
+                if (window.innerWidth > 768) {
+                    navMenu.style.display = 'flex';
+                }
+            }
+        });
+
+        // Ensure nav-menu visibility on resize
+        window.addEventListener('resize', function () {
+            if (window.innerWidth > 768) {
+                // Desktop: luôn show nav-menu và ẩn mobile-nav-menu
+                navMenu.style.display = 'flex';
+                mobileNavMenu.classList.remove('show');
+            } else {
+                // Mobile: nếu mobile-nav chưa show thì ẩn nav-menu
+                if (!mobileNavMenu.classList.contains('show')) {
+                    navMenu.style.display = 'none';
+                }
+            }
+        });
+
+        // Intersection observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        const observer = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease-out forwards';
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.feature-card, .template-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+
+</body>
+</html>
