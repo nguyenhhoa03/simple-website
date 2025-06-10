@@ -112,3 +112,4 @@ This repository is actively maintained. Check back regularly for:
 ---
 
 Made with ❤️ by [nguyenhhoa03](https://github.com/nguyenhhoa03) and the open-source community.
+And the python script (simple-website-editor.py) is a [Simple website templates editor](https://github.com/nguyenhhoa03/html-editor) for you! ❤️
