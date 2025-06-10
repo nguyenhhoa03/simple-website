@@ -25,6 +25,7 @@ class HTMLTemplateEditor:
         self.root.geometry("1200x800")
         
         # Biến lưu trữ
+        self.link_elements = []  # Thêm dòng này sau self.image_elements = []
         self.html_file_path = None
         self.html_content = ""
         self.text_elements = []
@@ -74,6 +75,25 @@ class HTMLTemplateEditor:
             font=ctk.CTkFont(size=16)
         )
         instruction_label.pack(pady=20)
+
+    def create_link_tab(self):
+        """Tạo tab chỉnh sửa liên kết"""
+        # Tạo scrollable frame cho link
+        self.link_scrollable_frame = ctk.CTkScrollableFrame(self.link_tab)
+        self.link_scrollable_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # Bind sự kiện cuộn chuột/touchpad
+        self.bind_mousewheel(self.link_scrollable_frame)
+        self.link_scrollable_frame.bind("<Button-1>", lambda e: self.link_scrollable_frame.focus_set())
+
+        # Label hướng dẫn
+        instruction_label = ctk.CTkLabel(
+            self.link_scrollable_frame,
+            text="Chọn file HTML để bắt đầu chỉnh sửa liên kết",
+            font=ctk.CTkFont(size=16)
+        )
+        instruction_label.pack(pady=20)
+
     
     def bind_mousewheel(self, widget):
         """Bind sự kiện cuộn chuột/touchpad cho widget một cách ổn định"""
@@ -216,6 +236,10 @@ class HTMLTemplateEditor:
         # Tab chỉnh sửa hình ảnh
         self.image_tab = self.tabview.add("Chỉnh sửa hình ảnh")
         self.create_image_tab()
+
+        # Tab chỉnh sửa link
+        self.link_tab = self.tabview.add("Chỉnh sửa liên kết")
+        self.create_link_tab()
     
     def select_html_file(self):
         """Chọn file HTML"""
@@ -254,6 +278,8 @@ class HTMLTemplateEditor:
             widget.destroy()
         for widget in self.image_scrollable_frame.winfo_children():
             widget.destroy()
+        for widget in self.link_scrollable_frame.winfo_children():  # Thêm dòng này
+            widget.destroy()
         
         # Parse HTML với BeautifulSoup
         soup = BeautifulSoup(self.html_content, 'html.parser')
@@ -290,11 +316,32 @@ class HTMLTemplateEditor:
                 'widgets': {}
             })
         
+        # Tìm tất cả các link elements
+        link_elements = soup.find_all('a')
+        for i, link in enumerate(link_elements):
+            href = link.get('href', '')
+            text = link.get_text(strip=True) if link.get_text(strip=True) else ''
+            title = link.get('title', '')
+            target = link.get('target', '')
+
+            self.link_elements.append({
+                'element': link,
+                'index': i,
+                'original_href': href,
+                'text': text,
+                'title': title,
+                'target': target,
+                'widgets': {}
+            })
+        
         # Tạo giao diện chỉnh sửa text
         self.create_text_editors()
         
         # Tạo giao diện chỉnh sửa image
         self.create_image_editors()
+
+        # Tạo giao diện chỉnh sửa link
+        self.create_link_editors()
     
     def create_text_editors(self):
         """Tạo các editor cho text elements"""
@@ -334,6 +381,84 @@ class HTMLTemplateEditor:
         self.root.after(200, lambda: self.bind_mousewheel(self.image_scrollable_frame))
         self.root.after(300, lambda: self.image_scrollable_frame.focus_set())
     
+    def create_link_editors(self):
+        """Tạo các editor cho link elements"""
+        if not self.link_elements:
+            no_link_label = ctk.CTkLabel(
+                self.link_scrollable_frame,
+                text="Không tìm thấy liên kết nào để chỉnh sửa trong file HTML",
+                font=ctk.CTkFont(size=14)
+            )
+            no_link_label.pack(pady=20)
+            return
+    
+        # Tạo editor cho mỗi link element
+        for i, link_data in enumerate(self.link_elements):
+            self.create_link_editor(i, link_data)
+
+        # Bind lại mousewheel cho các widget mới được tạo và refresh focus
+        self.root.after(200, lambda: self.bind_mousewheel(self.link_scrollable_frame))
+        self.root.after(300, lambda: self.link_scrollable_frame.focus_set())
+
+    def create_link_editor(self, index, link_data):
+        """Tạo editor cho một link element"""
+        # Frame container cho mỗi link editor
+        editor_frame = ctk.CTkFrame(self.link_scrollable_frame)
+        editor_frame.pack(fill="x", padx=5, pady=5)
+        
+        # Label mô tả
+        title_label = ctk.CTkLabel(
+            editor_frame,
+            text=f"Liên kết #{index + 1}",
+            font=ctk.CTkFont(weight="bold", size=14)
+        )
+        title_label.pack(anchor="w", padx=10, pady=(10, 5))
+        
+        # Text liên kết
+        text_label = ctk.CTkLabel(editor_frame, text="Văn bản hiển thị:")
+        text_label.pack(anchor="w", padx=10, pady=(5, 2))
+        
+        text_entry = ctk.CTkEntry(editor_frame, height=35)
+        text_entry.insert(0, link_data['text'])
+        text_entry.pack(fill="x", padx=10, pady=(0, 5))
+        
+        # URL/Href
+        href_label = ctk.CTkLabel(editor_frame, text="Đường dẫn (URL):")
+        href_label.pack(anchor="w", padx=10, pady=(5, 2))
+        
+        href_entry = ctk.CTkEntry(editor_frame, height=35)
+        href_entry.insert(0, link_data['original_href'])
+        href_entry.pack(fill="x", padx=10, pady=(0, 5))
+        
+        # Title
+        title_text_label = ctk.CTkLabel(editor_frame, text="Tiêu đề liên kết (Title):")
+        title_text_label.pack(anchor="w", padx=10, pady=(5, 2))
+        
+        title_entry = ctk.CTkEntry(editor_frame, height=35)
+        title_entry.insert(0, link_data['title'])
+        title_entry.pack(fill="x", padx=10, pady=(0, 5))
+        
+        # Target
+        target_label = ctk.CTkLabel(editor_frame, text="Cách mở liên kết:")
+        target_label.pack(anchor="w", padx=10, pady=(5, 2))
+        
+        target_combobox = ctk.CTkComboBox(
+            editor_frame,
+            values=["", "_blank", "_self", "_parent", "_top"],
+            height=35
+        )
+        target_combobox.set(link_data['target'])
+        target_combobox.pack(fill="x", padx=10, pady=(0, 10))
+        
+        # Lưu widgets vào link_data
+        link_data['widgets'] = {
+            'text_entry': text_entry,
+            'href_entry': href_entry,
+            'title_entry': title_entry,
+            'target_combobox': target_combobox
+        }
+
+
     def create_text_editor(self, index, text_data):
         """Tạo editor cho một text element"""
         # Frame container cho mỗi editor
@@ -617,6 +742,42 @@ class HTMLTemplateEditor:
                         # Xóa attribute nếu rỗng
                         if 'title' in img_elem.attrs:
                             del img_elem['title']
+            
+        # Cập nhật link cho từng element
+        for link_data in self.link_elements:
+            widgets = link_data['widgets']
+            if widgets:
+                # Lấy giá trị mới từ widgets
+                new_text = widgets['text_entry'].get().strip()
+                new_href = widgets['href_entry'].get().strip()
+                new_title = widgets['title_entry'].get().strip()
+                new_target = widgets['target_combobox'].get().strip()
+                
+                # Tìm link element tương ứng và cập nhật
+                link_elements = soup.find_all('a')
+                if link_data['index'] < len(link_elements):
+                    link_elem = link_elements[link_data['index']]
+                    
+                    # Cập nhật text content
+                    if new_text:
+                        link_elem.string = new_text
+                    
+                    # Cập nhật attributes
+                    if new_href:
+                        link_elem['href'] = new_href
+                    
+                    if new_title:
+                        link_elem['title'] = new_title
+                    else:
+                        if 'title' in link_elem.attrs:
+                            del link_elem['title']
+                    
+                    if new_target:
+                        link_elem['target'] = new_target
+                    else:
+                        if 'target' in link_elem.attrs:
+                            del link_elem['target']
+
         
         return str(soup)
     
