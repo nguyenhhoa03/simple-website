@@ -58,7 +58,14 @@
             transition: all 0.3s ease;
         }
 
-        .glass:hover {
+        /* Remove glass hover effect for nav specifically */
+        nav.glass:hover {
+            transform: translateX(-50%);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        /* Keep glass hover effect for other elements */
+        .glass:not(nav):hover {
             transform: translateY(-5px);
             box-shadow: 0 12px 40px rgba(31, 38, 135, 0.5);
         }
@@ -71,11 +78,11 @@
             transform: translateX(-50%);
             z-index: 1000;
             padding: 12px 25px;
-            /* Remove hover effect from nav container to prevent border conflicts */
         }
 
+        /* Remove all hover effects from nav container */
         nav.glass:hover {
-            transform: translateX(-50%) translateY(0);
+            transform: translateX(-50%);
             box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
         }
 
