@@ -26,6 +26,6 @@ Note: These website templates are AI-generated. All data and content shown are f
 
 ### Eco-friendly
 
-![Eco-friendly]()
+![Eco-friendly](https://i.ibb.co/v4sq7dtj/IMG-1749996215158-1749996326851.jpg)
 
 [Download](https://github.com/nguyenhhoa03/simple-website/blob/main/website-templates/Eco-friendly.html) / [Live Demo](https://htmlpreview.github.io/?https://raw.githubusercontent.com/nguyenhhoa03/simple-website/refs/heads/main/website-templates/Eco-friendly.html)
