@@ -2,9 +2,9 @@
 
 ## These are preview, download and live demo all website templates.
 
-Note: These website templates are AI-generated. All data and content shown are fictional and for illustrative purposes only.
-
 For more information, please visit [repo project on Github](https://github.com/nguyenhhoa03/simple-website)
+
+Note: These website templates are AI-generated. All data and content shown are fictional and for illustrative purposes only.
 
 ### Elegant Portfolio Template
 
