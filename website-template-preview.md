@@ -21,3 +21,9 @@ For more information, please visit [repo project on Github](https://github.com/n
 ![Neumorphism](https://i.ibb.co/Ng9r6hVT/Screenshot-From-2025-06-13-19-40-45.png)
 
 [Download](https://github.com/nguyenhhoa03/simple-website/blob/main/website-templates/Neumorphism.html) / [Live Demo](https://htmlpreview.github.io/?https://github.com/nguyenhhoa03/simple-website/blob/main/website-templates/Neumorphism.html)
+
+### Eco-friendly
+
+![Eco-friendly]()
+
+[Download](https://github.com/nguyenhhoa03/simple-website/blob/main/website-templates/Eco-friendly.html) / [Live Demo](https://htmlpreview.github.io/?https://raw.githubusercontent.com/nguyenhhoa03/simple-website/refs/heads/main/website-templates/Eco-friendly.html)
