@@ -18,7 +18,7 @@ A curated collection of beautiful, simple, and responsive website templates buil
 
 ## 🎨 Template Showcase
 
-Visit our showcase website: **[simple.42web.io](http://simple.42web.io)**
+Visit our showcase website: **[	webtemplates.free.nf](http://webtemplates.free.nf)**
 
 ## 📱 Responsive Design
 
@@ -77,15 +77,10 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## 🤝 Community
 
-- **Website**: [simple.42web.io](http://simple.42web.io)
+- **Website**: [simple.42web.io](http://webtemplates.free.nf)
 - **Issues**: [GitHub Issues](https://github.com/nguyenhhoa03/simple-website/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/nguyenhhoa03/simple-website/discussions)
 
-## 📈 Statistics
-
-- **Total Templates**: [Updated automatically]
-- **Total Downloads**: [Updated regularly]
-- **Contributors**: [Community driven]
 
 ## 🫶 Acknowledgments
 
