@@ -77,7 +77,7 @@ This project is licensed under the GNU General Public License v3.0 - see the [LI
 
 ## 🤝 Community
 
-- **Website**: [simple.42web.io](http://webtemplates.free.nf)
+- **Website**: [webtemplates.free.nf](http://webtemplates.free.nf)
 - **Issues**: [GitHub Issues](https://github.com/nguyenhhoa03/simple-website/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/nguyenhhoa03/simple-website/discussions)
 
