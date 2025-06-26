@@ -4,7 +4,7 @@
 
 For more information, please visit [repo project on Github](https://github.com/nguyenhhoa03/simple-website)
 
-Note:All data and content shown are fictional and for illustrative purposes only.
+Note: All data and content shown are fictional and for illustrative purposes only.
 
 ### Elegant Portfolio Template
 
